@@ -12,15 +12,12 @@ namespace Reflection_Tests
         protected override IEnumerable<MethodInfo> FindHandlers(Assembly assembly)
         {
             var assemblyTypes = assembly.GetTypes();
-            var methodInfos = assemblyTypes.SelectMany(assemblyType =>
-                assemblyType.GetMethods().Where(methodInfo =>
-                    Attribute.IsDefined(methodInfo, typeof(PacketHandlerMethodAttribute)) && PacketHandlerMethodAttribute.IsValidPacketHandlerMethod(methodInfo)));
+            var methodInfos = assemblyTypes.SelectMany(assemblyType => assemblyType.GetMethods().Where(methodInfo =>
+                Attribute.IsDefined(methodInfo, typeof(PacketHandlerMethodAttribute)) &&
+                PacketHandlerMethodAttribute.IsValidPacketHandlerMethod(methodInfo)));
+
             return methodInfos;
         }
-
-        #endregion
-
-        #region Overrides of PacketHandlerRegistry<MethodInfo,MethodInfo>
 
         protected override KeyValuePair<Type, MethodInfo> ExtractHandler(MethodInfo handlerMetaType)
         {
@@ -28,11 +25,8 @@ namespace Reflection_Tests
             return new KeyValuePair<Type, MethodInfo>(packetType, handlerMetaType);
         }
 
-        #endregion
-
-        #region Overrides of PacketHandlerRegistry<MethodInfo,MethodInfo>
-
-        protected override bool Invoke(MethodInfo handler, PacketSender packetSender, IPacket packet) => (bool)handler.Invoke(null, new object[] { packetSender, packet });
+        protected override bool Invoke(MethodInfo handler, PacketSender packetSender, IPacket packet) =>
+            (bool) handler.Invoke(null, new object[] {packetSender, packet});
 
         #endregion
     }

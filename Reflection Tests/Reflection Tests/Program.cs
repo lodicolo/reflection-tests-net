@@ -9,6 +9,7 @@ namespace Reflection_Tests
         static void Main(string[] args)
         {
             ClassPacketHandlers();
+            ClassDelegatePacketHandlers();
             DelegatePacketHandlers();
             MethodInfoPacketHandlers();
             Console.WriteLine("Press any key to continue...");
@@ -20,12 +21,18 @@ namespace Reflection_Tests
             var sender = new PacketSender();
             var packet = new ExamplePacket();
             var registry = new ClassPacketHandlerRegistry();
+
+            var sw = Stopwatch.StartNew();
             if (!registry.TryRegisterHandlers(Assembly.GetExecutingAssembly()))
             {
                 Console.WriteLine("Failed to register class handlers.");
             }
 
-            var sw = Stopwatch.StartNew();
+            sw.Stop();
+
+            Console.WriteLine($"{nameof(ClassPacketHandlers)}: Registration took {sw.Elapsed.TotalMilliseconds}ms");
+
+            sw = Stopwatch.StartNew();
             for (var itr = 0; itr < 10000000; ++itr)
             {
                 registry.Handle(sender, packet);
@@ -33,20 +40,53 @@ namespace Reflection_Tests
 
             sw.Stop();
 
-            Console.WriteLine($"{nameof(ClassPacketHandlers)}: {sw.Elapsed}");
+            Console.WriteLine($"{nameof(ClassPacketHandlers)}: Invocation took {sw.Elapsed.TotalMilliseconds}ms");
+        }
+
+        static void ClassDelegatePacketHandlers()
+        {
+            var sender = new PacketSender();
+            var packet = new ExamplePacket();
+            var registry = new ClassDelegatePacketHandlerRegistry();
+
+            var sw = Stopwatch.StartNew();
+            if (!registry.TryRegisterHandlers(Assembly.GetExecutingAssembly()))
+            {
+                Console.WriteLine("Failed to register class delegate handlers.");
+            }
+
+            sw.Stop();
+
+            Console.WriteLine($"{nameof(ClassDelegatePacketHandlers)}: Registration took {sw.Elapsed.TotalMilliseconds}ms");
+
+            sw = Stopwatch.StartNew();
+            for (var itr = 0; itr < 10000000; ++itr)
+            {
+                registry.Handle(sender, packet);
+            }
+
+            sw.Stop();
+
+            Console.WriteLine($"{nameof(ClassDelegatePacketHandlers)}: Invocation took {sw.Elapsed.TotalMilliseconds}ms");
         }
 
         static void DelegatePacketHandlers()
         {
             var sender = new PacketSender();
             var packet = new ExamplePacket();
+
+            var sw = Stopwatch.StartNew();
             var registry = new DelegatePacketHandlerRegistry();
             if (!registry.TryRegisterHandlers(Assembly.GetExecutingAssembly()))
             {
                 Console.WriteLine("Failed to register delegate handlers.");
             }
 
-            var sw = Stopwatch.StartNew();
+            sw.Stop();
+
+            Console.WriteLine($"{nameof(DelegatePacketHandlers)}: Registration took {sw.Elapsed.TotalMilliseconds}ms");
+
+            sw = Stopwatch.StartNew();
             for (var itr = 0; itr < 10000000; ++itr)
             {
                 registry.Handle(sender, packet);
@@ -54,20 +94,26 @@ namespace Reflection_Tests
 
             sw.Stop();
 
-            Console.WriteLine($"{nameof(DelegatePacketHandlerRegistry)}: {sw.Elapsed}");
+            Console.WriteLine($"{nameof(DelegatePacketHandlers)}: Invocation took {sw.Elapsed.TotalMilliseconds}ms");
         }
 
         static void MethodInfoPacketHandlers()
         {
             var sender = new PacketSender();
             var packet = new ExamplePacket();
+
+            var sw = Stopwatch.StartNew();
             var registry = new MethodInfoPacketHandlerRegistry();
             if (!registry.TryRegisterHandlers(Assembly.GetExecutingAssembly()))
             {
                 Console.WriteLine("Failed to register method handlers.");
             }
 
-            var sw = Stopwatch.StartNew();
+            sw.Stop();
+
+            Console.WriteLine($"{nameof(MethodInfoPacketHandlers)}: Registration took {sw.Elapsed.TotalMilliseconds}ms");
+
+            sw = Stopwatch.StartNew();
             for (var itr = 0; itr < 10000000; ++itr)
             {
                 registry.Handle(sender, packet);
@@ -75,7 +121,7 @@ namespace Reflection_Tests
 
             sw.Stop();
 
-            Console.WriteLine($"{nameof(MethodInfoPacketHandlers)}: {sw.Elapsed}");
+            Console.WriteLine($"{nameof(MethodInfoPacketHandlers)}: Invocation took {sw.Elapsed.TotalMilliseconds}ms");
         }
     }
 }

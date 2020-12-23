@@ -7,7 +7,7 @@ namespace Reflection_Tests
 {
     public class DelegatePacketHandlerRegistry : PacketHandlerRegistry<HandlePacketGeneric, MethodInfo>
     {
-        #region Overrides of PacketHandlerRegistry<Delegate,MethodInfo>
+        #region Overrides of PacketHandlerRegistry<HandlePacketGeneric,MethodInfo>
 
         protected override IEnumerable<MethodInfo> FindHandlers(Assembly assembly)
         {
@@ -19,12 +19,7 @@ namespace Reflection_Tests
             return methodInfos;
         }
 
-        #endregion
-
-        #region Overrides of PacketHandlerRegistry<object,MethodInfo>
-
-        private static HandlePacketGeneric CreateHandlerDelegate<TPacket>(MethodInfo methodInfo)
-            where TPacket : IPacket
+        private static HandlePacketGeneric CreateHandlerDelegate<TPacket>(MethodInfo methodInfo) where TPacket : IPacket
         {
             var stronglyTyped =
                 Delegate.CreateDelegate(typeof(HandlePacket<TPacket>), methodInfo) as HandlePacket<TPacket>;
@@ -40,7 +35,7 @@ namespace Reflection_Tests
 
             var packetType = packetHandlerMethodAttribute.PacketType;
             var delegateType = typeof(HandlePacket<>).MakeGenericType(packetType);
-            var genericDelegateFactory = typeof(DelegatePacketHandlerRegistry).GetMethod(nameof(CreateHandlerDelegate),
+            var genericDelegateFactory = GetType().GetMethod(nameof(CreateHandlerDelegate),
                 BindingFlags.NonPublic | BindingFlags.Static);
 
             var typedDelegateFactory = genericDelegateFactory.MakeGenericMethod(packetType);
@@ -49,10 +44,6 @@ namespace Reflection_Tests
 
             return new KeyValuePair<Type, HandlePacketGeneric>(packetType, packetHandlerDelegate);
         }
-
-        #endregion
-
-        #region Overrides of PacketHandlerRegistry<object,MethodInfo>
 
         protected override bool Invoke(HandlePacketGeneric handler, PacketSender packetSender, IPacket packet) =>
             handler(packetSender, packet);
