@@ -48,7 +48,7 @@
     <Compile Include="ExamplePacket.cs" />
     <Compile Include="ExamplePacketHandler.cs" />
     <Compile Include="ExampleStaticPacketHandler.cs" />
-    <Compile Include="HandlePacketDelegate.cs" />
+    <Compile Include="HandlePacket.cs" />
     <Compile Include="IPacket.cs" />
     <Compile Include="IPacketHandler.cs" />
     <Compile Include="MethodInfoPacketHandlerRegistry.cs" />

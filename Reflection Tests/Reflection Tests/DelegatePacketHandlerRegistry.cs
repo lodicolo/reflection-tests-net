@@ -5,9 +5,7 @@ using System.Reflection;
 
 namespace Reflection_Tests
 {
-    using GenericPacketHandler = Func<PacketSender, IPacket, bool>;
-
-    public class DelegatePacketHandlerRegistry : PacketHandlerRegistry<GenericPacketHandler, MethodInfo>
+    public class DelegatePacketHandlerRegistry : PacketHandlerRegistry<HandlePacketGeneric, MethodInfo>
     {
         #region Overrides of PacketHandlerRegistry<Delegate,MethodInfo>
 
@@ -25,39 +23,38 @@ namespace Reflection_Tests
 
         #region Overrides of PacketHandlerRegistry<object,MethodInfo>
 
-        private static GenericPacketHandler CreateHandlerDelegate<TPacket>(MethodInfo methodInfo)
+        private static HandlePacketGeneric CreateHandlerDelegate<TPacket>(MethodInfo methodInfo)
             where TPacket : IPacket
         {
             var stronglyTyped =
-                (Func<PacketSender, TPacket, bool>) Delegate.CreateDelegate(typeof(Func<PacketSender, TPacket, bool>),
-                    methodInfo);
+                Delegate.CreateDelegate(typeof(HandlePacket<TPacket>), methodInfo) as HandlePacket<TPacket>;
 
             return (PacketSender packetSender, IPacket packet) => stronglyTyped(packetSender, (TPacket) packet);
         }
 
-        protected override KeyValuePair<Type, GenericPacketHandler> ExtractHandler(MethodInfo handlerMetaType)
+        protected override KeyValuePair<Type, HandlePacketGeneric> ExtractHandler(MethodInfo handlerMetaType)
         {
             var packetHandlerMethodAttribute =
                 Attribute.GetCustomAttribute(handlerMetaType, typeof(PacketHandlerMethodAttribute)) as
                     PacketHandlerMethodAttribute;
 
             var packetType = packetHandlerMethodAttribute.PacketType;
-            var delegateType = typeof(HandlePacketDelegate<>).MakeGenericType(packetType);
+            var delegateType = typeof(HandlePacket<>).MakeGenericType(packetType);
             var genericDelegateFactory = typeof(DelegatePacketHandlerRegistry).GetMethod(nameof(CreateHandlerDelegate),
                 BindingFlags.NonPublic | BindingFlags.Static);
 
             var typedDelegateFactory = genericDelegateFactory.MakeGenericMethod(packetType);
             var packetHandlerDelegate =
-                (GenericPacketHandler) typedDelegateFactory.Invoke(null, new object[] {handlerMetaType});
+                typedDelegateFactory.Invoke(null, new object[] {handlerMetaType}) as HandlePacketGeneric;
 
-            return new KeyValuePair<Type, GenericPacketHandler>(packetType, packetHandlerDelegate);
+            return new KeyValuePair<Type, HandlePacketGeneric>(packetType, packetHandlerDelegate);
         }
 
         #endregion
 
         #region Overrides of PacketHandlerRegistry<object,MethodInfo>
 
-        protected override bool Invoke(GenericPacketHandler handler, PacketSender packetSender, IPacket packet) =>
+        protected override bool Invoke(HandlePacketGeneric handler, PacketSender packetSender, IPacket packet) =>
             handler(packetSender, packet);
 
         #endregion
